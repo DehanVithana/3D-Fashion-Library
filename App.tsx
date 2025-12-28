@@ -10,6 +10,7 @@ import { Move3d, ZoomIn, RefreshCw } from 'lucide-react';
 const App: React.FC = () => {
   const [model, setModel] = useState<UploadedModel | null>(null);
   const [gesture, setGesture] = useState<string>('IDLE');
+  const [isReady, setIsReady] = useState(false);
   
   // These refs are passed down to be mutated by HandController (Logic) 
   // and rendered by Viewer3D (Visuals) without triggering React re-renders for performance
@@ -34,6 +35,12 @@ const App: React.FC = () => {
     }
   };
 
+  React.useEffect(() => {
+    // Small delay to ensure everything is mounted
+    const timer = setTimeout(() => setIsReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#F3F4F6] text-slate-900 font-sans selection:bg-red-100">
       
@@ -41,22 +48,26 @@ const App: React.FC = () => {
       
       {/* 3D Canvas Layer */}
       <main className="absolute inset-0 z-0">
-        <Viewer3D 
-          sceneRef={sceneRef} 
-          cameraRef={cameraRef} 
-          modelUrl={model?.url || null} 
-        />
+        {isReady && (
+          <Viewer3D 
+            sceneRef={sceneRef} 
+            cameraRef={cameraRef} 
+            modelUrl={model?.url || null} 
+          />
+        )}
       </main>
 
       {/* UI Layers */}
       <Sidebar onUpload={handleUpload} currentModel={model} />
       
-      <HandController 
-        ref={handControllerRef}
-        sceneRef={sceneRef} 
-        cameraRef={cameraRef} 
-        onGestureChange={setGesture} 
-      />
+      {isReady && (
+        <HandController 
+          ref={handControllerRef}
+          sceneRef={sceneRef} 
+          cameraRef={cameraRef} 
+          onGestureChange={setGesture} 
+        />
+      )}
 
       {/* Dynamic Gesture Feedback Overlay */}
       <div className="absolute top-24 right-0 left-0 flex flex-col items-center gap-4 pointer-events-none z-20">
