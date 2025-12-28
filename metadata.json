@@ -1,0 +1,7 @@
+{
+  "name": "MAS Holdings 3D Fashion Library",
+  "description": "Premium 3D asset viewer with MediaPipe hand-tracking interactions.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
