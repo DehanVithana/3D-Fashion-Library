@@ -4,48 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MAS Holdings 3D Fashion Library</title>
-    <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            fontFamily: {
-              serif: ['"Playfair Display"', 'serif'],
-              sans: ['"Inter"', 'sans-serif'],
-            },
-            colors: {
-              mas: {
-                navy: '#0a192f',
-                red: '#ff0000', // Kept generic based on typical logo, but focused on Navy/White as requested
-                gray: '#F3F4F6'
-              }
-            }
-          }
-        }
-      }
-    </script>
     <style>
-      body { margin: 0; overflow: hidden; background-color: #F3F4F6; }
+      body { 
+        margin: 0; 
+        overflow: hidden; 
+        background-color: #F3F4F6;
+        font-family: 'Inter', sans-serif;
+      }
       /* Hide scrollbar for clean UI */
       ::-webkit-scrollbar { width: 0px; background: transparent; }
+      
+      /* Loading fallback */
+      #root:empty::before {
+        content: 'Loading...';
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 18px;
+        color: #64748b;
+      }
     </style>
-  <script type="importmap">
-{
-  "imports": {
-    "@react-three/fiber": "https://esm.sh/@react-three/fiber@^9.4.2",
-    "@mediapipe/tasks-vision": "https://esm.sh/@mediapipe/tasks-vision@^0.10.22-rc.20250304",
-    "lucide-react": "https://esm.sh/lucide-react@^0.562.0",
-    "react/": "https://esm.sh/react@^19.2.3/",
-    "react": "https://esm.sh/react@^19.2.3",
-    "three": "https://esm.sh/three@^0.182.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
-    "@react-three/drei": "https://esm.sh/@react-three/drei@^10.7.7"
-  }
-}
-</script>
-</head>
+  </head>
   <body>
     <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
   </body>
 </html>
