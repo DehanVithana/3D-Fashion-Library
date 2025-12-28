@@ -24,3 +24,17 @@ export interface UploadedModel {
   url: string;
   size: string;
 }
+
+export interface LibraryAsset {
+  id: string;
+  name: string;
+  category: string;
+  tags: string[];
+  dataUrl: string; // Base64 encoded model data
+  thumbnail?: string;
+  uploadDate: string;
+  fileSize: string;
+  description?: string;
+}
+
+export type AssetCategory = 'Tops' | 'Bottoms' | 'Dresses' | 'Outerwear' | 'Accessories' | 'Footwear' | 'Other';
