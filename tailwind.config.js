@@ -20,6 +20,7 @@ export default {
       animation: {
         'fade-in-up': 'fadeInUp 0.5s ease-out',
         'fade-in': 'fadeIn 0.3s ease-out',
+        'spin': 'spin 1s linear infinite',
       },
       keyframes: {
         fadeInUp: {
