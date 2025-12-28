@@ -7,7 +7,7 @@ export const Header: React.FC = () => {
         {/* MAS Logo Container */}
         <div className="bg-white p-3 shadow-sm rounded-sm">
           <img 
-            src="https://upload.wikimedia.org/wikipedia/commons/2/23/MAS_Holdings_Logo.png" 
+            src="https://vectorseek.com/wp-content/uploads/2023/09/Mas-Logo-Vector.svg-.png" 
             alt="MAS Holdings" 
             className="h-10 w-auto object-contain"
           />
