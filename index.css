@@ -3,12 +3,14 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-  
   body {
     @apply bg-[#F3F4F6] text-slate-900;
     font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  
+  * {
+    box-sizing: border-box;
   }
 }
