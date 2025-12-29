@@ -6,6 +6,7 @@ import { Viewer3D } from './components/Viewer3D';
 import { HandController } from './components/HandController';
 import { UploadModal } from './components/UploadModal';
 import { LibraryAsset, HandControllerHandle } from './types';
+import { storage } from './utils/storage';
 import { Move3d, ZoomIn, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
