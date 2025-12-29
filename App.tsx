@@ -32,12 +32,12 @@ const App: React.FC = () => {
 
   const loadAssets = async () => {
     try {
-      const result = await window.storage.list('asset:');
+      const result = await storage.list('asset:');
       if (result && result.keys) {
         const loadedAssets: LibraryAsset[] = [];
         for (const key of result.keys) {
           try {
-            const data = await window.storage.get(key);
+            const data = await storage.get(key);
             if (data && data.value) {
               loadedAssets.push(JSON.parse(data.value));
             }
@@ -58,13 +58,17 @@ const App: React.FC = () => {
 
   const handleSaveAsset = async (asset: LibraryAsset) => {
     try {
-      await window.storage.set(`asset:${asset.id}`, JSON.stringify(asset));
-      setAssets(prev => [asset, ...prev]);
-      setCurrentAsset(asset);
-      setShowUploadModal(false);
+      const result = await storage.set(`asset:${asset.id}`, JSON.stringify(asset));
+      if (result) {
+        setAssets(prev => [asset, ...prev]);
+        setCurrentAsset(asset);
+        setShowUploadModal(false);
+      } else {
+        throw new Error('Storage returned null');
+      }
     } catch (err) {
       console.error('Error saving asset:', err);
-      alert('Failed to save asset. Please try again.');
+      alert('Failed to save asset. Your browser may have storage disabled or full. Try enabling cookies/storage or freeing up space.');
     }
   };
 
@@ -72,7 +76,7 @@ const App: React.FC = () => {
     if (!confirm('Are you sure you want to delete this asset?')) return;
     
     try {
-      await window.storage.delete(`asset:${id}`);
+      await storage.delete(`asset:${id}`);
       setAssets(prev => prev.filter(a => a.id !== id));
       if (currentAsset?.id === id) {
         setCurrentAsset(null);
