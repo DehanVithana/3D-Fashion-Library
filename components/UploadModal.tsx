@@ -7,7 +7,7 @@ interface UploadModalProps {
   onSave: (asset: LibraryAsset) => void;
 }
 
-const categories: AssetCategory[] = ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Accessories', 'Footwear', 'Other'];
+const categories: AssetCategory[] = ['Bra','Brief','Boxers','Athleisure','Swimwear','Apparel','Other'];
 
 export const UploadModal: React.FC<UploadModalProps> = ({ onClose, onSave }) => {
   const [file, setFile] = useState<File | null>(null);
