@@ -18,6 +18,7 @@ const App: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [loading, setLoading] = useState(true);
+  const [sidebarVisible, setSidebarVisible] = useState(true);
   
   const sceneRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
@@ -45,9 +46,15 @@ const App: React.FC = () => {
             console.error(`Failed to load asset ${key}:`, err);
           }
         }
-        setAssets(loadedAssets.sort((a, b) => 
+        const sortedAssets = loadedAssets.sort((a, b) => 
           new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
-        ));
+        );
+        setAssets(sortedAssets);
+        
+        // Auto-select the latest asset if none is selected
+        if (sortedAssets.length > 0 && !currentAsset) {
+          setCurrentAsset(sortedAssets[0]);
+        }
       }
     } catch (err) {
       console.error('Error loading assets:', err);
@@ -127,17 +134,44 @@ const App: React.FC = () => {
       </main>
 
       {/* Library Sidebar */}
-      <LibrarySidebar 
-        assets={filteredAssets}
-        currentAsset={currentAsset}
-        onSelectAsset={handleSelectAsset}
-        onDeleteAsset={handleDeleteAsset}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        loading={loading}
-      />
+      {sidebarVisible && (
+        <LibrarySidebar 
+          assets={filteredAssets}
+          currentAsset={currentAsset}
+          onSelectAsset={handleSelectAsset}
+          onDeleteAsset={handleDeleteAsset}
+          searchQuery={searchQuery}
+          onSearchChange={setSearchQuery}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          loading={loading}
+        />
+      )}
+
+      {/* Sidebar Toggle Button */}
+      <button
+        onClick={() => setSidebarVisible(!sidebarVisible)}
+        className={`absolute top-1/2 -translate-y-1/2 z-30 bg-white hover:bg-slate-50 text-slate-800 rounded-r-xl shadow-xl border border-l-0 border-slate-200 transition-all active:scale-95 p-3 ${
+          sidebarVisible ? 'left-[352px]' : 'left-0'
+        }`}
+        title={sidebarVisible ? 'Hide Library' : 'Show Library'}
+      >
+        <svg 
+          width="16" 
+          height="16" 
+          viewBox="0 0 16 16" 
+          fill="none" 
+          className={`transform transition-transform ${sidebarVisible ? '' : 'rotate-180'}`}
+        >
+          <path 
+            d="M10 12L6 8L10 4" 
+            stroke="currentColor" 
+            strokeWidth="2" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          />
+        </svg>
+      </button>
       
       {isReady && (
         <HandController 
