@@ -1,32 +1,91 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import * as THREE from 'three';
 import { Header } from './components/Header';
-import { Sidebar } from './components/Sidebar';
+import { LibrarySidebar } from './components/LibrarySidebar';
 import { Viewer3D } from './components/Viewer3D';
 import { HandController } from './components/HandController';
-import { UploadedModel, HandControllerHandle } from './types';
+import { UploadModal } from './components/UploadModal';
+import { LibraryAsset, HandControllerHandle } from './types';
 import { Move3d, ZoomIn, RefreshCw } from 'lucide-react';
 
 const App: React.FC = () => {
-  const [model, setModel] = useState<UploadedModel | null>(null);
+  const [assets, setAssets] = useState<LibraryAsset[]>([]);
+  const [currentAsset, setCurrentAsset] = useState<LibraryAsset | null>(null);
   const [gesture, setGesture] = useState<string>('IDLE');
   const [isReady, setIsReady] = useState(false);
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+  const [loading, setLoading] = useState(true);
   
-  // These refs are passed down to be mutated by HandController (Logic) 
-  // and rendered by Viewer3D (Visuals) without triggering React re-renders for performance
   const sceneRef = useRef<THREE.Group>(null);
   const cameraRef = useRef<THREE.PerspectiveCamera>(null);
-  
-  // Ref to call reset on HandController
   const handControllerRef = useRef<HandControllerHandle>(null);
 
-  const handleUpload = (file: File) => {
-    const url = URL.createObjectURL(file);
-    setModel({
-      name: file.name,
-      url: url,
-      size: (file.size / 1024 / 1024).toFixed(2) + ' MB'
-    });
+  // Load assets from storage on mount
+  useEffect(() => {
+    loadAssets();
+    const timer = setTimeout(() => setIsReady(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const loadAssets = async () => {
+    try {
+      const result = await window.storage.list('asset:');
+      if (result && result.keys) {
+        const loadedAssets: LibraryAsset[] = [];
+        for (const key of result.keys) {
+          try {
+            const data = await window.storage.get(key);
+            if (data && data.value) {
+              loadedAssets.push(JSON.parse(data.value));
+            }
+          } catch (err) {
+            console.error(`Failed to load asset ${key}:`, err);
+          }
+        }
+        setAssets(loadedAssets.sort((a, b) => 
+          new Date(b.uploadDate).getTime() - new Date(a.uploadDate).getTime()
+        ));
+      }
+    } catch (err) {
+      console.error('Error loading assets:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveAsset = async (asset: LibraryAsset) => {
+    try {
+      await window.storage.set(`asset:${asset.id}`, JSON.stringify(asset));
+      setAssets(prev => [asset, ...prev]);
+      setCurrentAsset(asset);
+      setShowUploadModal(false);
+    } catch (err) {
+      console.error('Error saving asset:', err);
+      alert('Failed to save asset. Please try again.');
+    }
+  };
+
+  const handleDeleteAsset = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this asset?')) return;
+    
+    try {
+      await window.storage.delete(`asset:${id}`);
+      setAssets(prev => prev.filter(a => a.id !== id));
+      if (currentAsset?.id === id) {
+        setCurrentAsset(null);
+      }
+    } catch (err) {
+      console.error('Error deleting asset:', err);
+    }
+  };
+
+  const handleSelectAsset = (asset: LibraryAsset) => {
+    setCurrentAsset(asset);
+    if (handControllerRef.current) {
+      handControllerRef.current.resetCamera();
+    }
   };
 
   const handleResetView = () => {
@@ -35,16 +94,21 @@ const App: React.FC = () => {
     }
   };
 
-  React.useEffect(() => {
-    // Small delay to ensure everything is mounted
-    const timer = setTimeout(() => setIsReady(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
+  // Filter assets based on search and category
+  const filteredAssets = assets.filter(asset => {
+    const matchesSearch = asset.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         asset.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = selectedCategory === 'All' || asset.category === selectedCategory;
+    return matchesSearch && matchesCategory;
+  });
 
   return (
     <div className="relative w-full h-screen overflow-hidden bg-[#F3F4F6] text-slate-900 font-sans selection:bg-red-100">
       
-      <Header />
+      <Header 
+        onUploadClick={() => setShowUploadModal(true)}
+        assetCount={assets.length}
+      />
       
       {/* 3D Canvas Layer */}
       <main className="absolute inset-0 z-0">
@@ -52,13 +116,23 @@ const App: React.FC = () => {
           <Viewer3D 
             sceneRef={sceneRef} 
             cameraRef={cameraRef} 
-            modelUrl={model?.url || null} 
+            modelUrl={currentAsset?.dataUrl || null} 
           />
         )}
       </main>
 
-      {/* UI Layers */}
-      <Sidebar onUpload={handleUpload} currentModel={model} />
+      {/* Library Sidebar */}
+      <LibrarySidebar 
+        assets={filteredAssets}
+        currentAsset={currentAsset}
+        onSelectAsset={handleSelectAsset}
+        onDeleteAsset={handleDeleteAsset}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        loading={loading}
+      />
       
       {isReady && (
         <HandController 
@@ -69,10 +143,8 @@ const App: React.FC = () => {
         />
       )}
 
-      {/* Dynamic Gesture Feedback Overlay */}
+      {/* Gesture Feedback */}
       <div className="absolute top-24 right-0 left-0 flex flex-col items-center gap-4 pointer-events-none z-20">
-        
-        {/* Status Pill */}
         <div className={`
           flex items-center gap-2 px-4 py-2 rounded-full backdrop-blur-md shadow-lg transition-all duration-300 transform
           ${gesture !== 'IDLE' ? 'bg-slate-900/80 text-white translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}
@@ -83,10 +155,9 @@ const App: React.FC = () => {
             {gesture === 'ROTATE' ? 'Rotating' : 'Zooming'}
           </span>
         </div>
-
       </div>
 
-      {/* Reset Button (Bottom Center) */}
+      {/* Reset Button */}
       <div className="absolute bottom-8 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
         <button 
           onClick={handleResetView}
@@ -96,6 +167,14 @@ const App: React.FC = () => {
           <span className="font-medium text-sm">Reset View</span>
         </button>
       </div>
+
+      {/* Upload Modal */}
+      {showUploadModal && (
+        <UploadModal 
+          onClose={() => setShowUploadModal(false)}
+          onSave={handleSaveAsset}
+        />
+      )}
 
     </div>
   );
