@@ -37,4 +37,4 @@ export interface LibraryAsset {
   description?: string;
 }
 
-export type AssetCategory = 'Tops' | 'Bottoms' | 'Dresses' | 'Outerwear' | 'Accessories' | 'Footwear' | 'Other';
+export type AssetCategory = 'Bra' | 'Brief' | 'Boxers' | 'Athleisure' | 'Swimwear' | 'Apparel' | 'Other';
