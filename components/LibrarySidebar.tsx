@@ -14,7 +14,7 @@ interface LibrarySidebarProps {
   loading: boolean;
 }
 
-const categories: (AssetCategory | 'All')[] = ['All', 'Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Accessories', 'Footwear', 'Other'];
+const categories: (AssetCategory | 'All')[] = ['All', 'Bra','Brief','Boxers','Athleisure','Swimwear','Apparel','Other'];
 
 export const LibrarySidebar: React.FC<LibrarySidebarProps> = ({
   assets,
