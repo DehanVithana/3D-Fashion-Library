@@ -126,7 +126,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({ onClose, onSave }) => 
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g., Summer Floral Dress"
+              placeholder="e.g., Smooth Push-Up Bra"
               className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-slate-900"
               required
             />
